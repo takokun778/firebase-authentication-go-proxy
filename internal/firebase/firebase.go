@@ -218,12 +218,13 @@ func (fb *Firebase) ChangePassword(ctx context.Context, uid string, password str
 	return nil
 }
 
-func (fb *Firebase) Verify(ctx context.Context, token string) error {
-	if _, err := fb.firebaseAuth.VerifyIDToken(ctx, token); err != nil {
-		return fmt.Errorf("failed to verify token: %w", err)
+func (fb *Firebase) Verify(ctx context.Context, token string) (string, error) {
+	res, err := fb.firebaseAuth.VerifyIDToken(ctx, token)
+	if err != nil {
+		return "", fmt.Errorf("failed to verify token: %w", err)
 	}
 
-	return nil
+	return res.UID, nil
 }
 
 func (fb *Firebase) Delete(ctx context.Context, uid string) error {

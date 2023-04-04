@@ -29,6 +29,39 @@ func New(
 // リサイン(退会)
 // (DELETE /v1/auth)
 func (hdl *Handler) V1AuthResign(ctx echo.Context) error {
+	if ctx.Request().Header.Get("Authorization") == "" {
+		return fmt.Errorf("authorization header is empty")
+	}
+
+	token := strings.Split(ctx.Request().Header.Get("Authorization"), " ")
+
+	if len(token) != 2 {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	if token[0] != "Bearer" {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	uid, err := hdl.firebase.Verify(ctx.Request().Context(), token[1])
+	if err != nil {
+		return fmt.Errorf("error verify: %w", err)
+	}
+
+	var body api.V1AuthResignRequestSchema
+
+	if err := (&echo.DefaultBinder{}).BindBody(ctx, &body); err != nil {
+		return fmt.Errorf("error bind body: %w", err)
+	}
+
+	if _, err := hdl.firebase.SignIn(ctx.Request().Context(), string(body.Email), body.Password); err != nil {
+		return fmt.Errorf("error sign in: %w", err)
+	}
+
+	if err := hdl.firebase.Delete(ctx.Request().Context(), uid); err != nil {
+		return fmt.Errorf("error delete user: %w", err)
+	}
+
 	return nil
 }
 
@@ -120,9 +153,7 @@ func (hdl *Handler) V1AuthVerify(ctx echo.Context) error {
 		return fmt.Errorf("authorization header is invalid")
 	}
 
-	log.Printf("token: %s", token[1])
-
-	if err := hdl.firebase.Verify(ctx.Request().Context(), token[1]); err != nil {
+	if _, err := hdl.firebase.Verify(ctx.Request().Context(), token[1]); err != nil {
 		return fmt.Errorf("error verify: %w", err)
 	}
 
