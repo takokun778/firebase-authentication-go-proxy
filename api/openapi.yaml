@@ -250,7 +250,7 @@ components:
         newPassword:
           type: string
           description: 新パスワード
-          example: password
+          example: new_password
       required:
         - email
         - oldPassword
