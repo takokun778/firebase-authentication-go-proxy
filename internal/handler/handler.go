@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -105,5 +106,25 @@ func (hdl *Handler) V1AuthSignUp(ctx echo.Context) error {
 // 検証
 // (GET /v1/auth/verify)
 func (hdl *Handler) V1AuthVerify(ctx echo.Context) error {
+	if ctx.Request().Header.Get("Authorization") == "" {
+		return fmt.Errorf("authorization header is empty")
+	}
+
+	token := strings.Split(ctx.Request().Header.Get("Authorization"), " ")
+
+	if len(token) != 2 {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	if token[0] != "Bearer" {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	log.Printf("token: %s", token[1])
+
+	if err := hdl.firebase.Verify(ctx.Request().Context(), token[1]); err != nil {
+		return fmt.Errorf("error verify: %w", err)
+	}
+
 	return nil
 }
