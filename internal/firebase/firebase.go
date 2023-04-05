@@ -158,6 +158,14 @@ func (fb *Firebase) SignIn(ctx context.Context, email string, password string) (
 	}, nil
 }
 
+func (fb *Firebase) SignOut(ctx context.Context, uid string) error {
+	if err := fb.firebaseAuth.RevokeRefreshTokens(ctx, uid); err != nil {
+		return fmt.Errorf("failed to revoke refresh token: %w", err)
+	}
+
+	return nil
+}
+
 func (fb *Firebase) Refresh(ctx context.Context, token string) (string, error) {
 	// https://firebase.google.com/docs/reference/rest/auth?hl=ja#section-refresh-token
 	endpoint := fmt.Sprintf("%s/v1/token?key=%s", fb.secureToken, fb.apiKey)

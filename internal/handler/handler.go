@@ -146,6 +146,29 @@ func (hdl *Handler) V1AuthSignIn(ctx echo.Context) error {
 // サインアウト
 // (GET /v1/auth/signout)
 func (hdl *Handler) V1AuthSignOut(ctx echo.Context) error {
+	if ctx.Request().Header.Get("Authorization") == "" {
+		return fmt.Errorf("authorization header is empty")
+	}
+
+	token := strings.Split(ctx.Request().Header.Get("Authorization"), " ")
+
+	if len(token) != 2 {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	if token[0] != "Bearer" {
+		return fmt.Errorf("authorization header is invalid")
+	}
+
+	uid, err := hdl.firebase.Verify(ctx.Request().Context(), token[1])
+	if err != nil {
+		return fmt.Errorf("error verify: %w", err)
+	}
+
+	if err := hdl.firebase.SignOut(ctx.Request().Context(), uid); err != nil {
+		return fmt.Errorf("error sign out: %w", err)
+	}
+
 	return nil
 }
 
