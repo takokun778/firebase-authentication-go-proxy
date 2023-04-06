@@ -101,6 +101,10 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/V1AuthRefreshResponseSchema'
         '401':
           description: Unauthorized
         '500':

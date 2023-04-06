@@ -10,6 +10,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/takokun778/firebase-authentication-go-proxy/internal/api"
 	"github.com/takokun778/firebase-authentication-go-proxy/internal/firebase"
+	"github.com/takokun778/firebase-authentication-go-proxy/internal/model"
 )
 
 var _ api.ServerInterface = &Handler{}
@@ -113,9 +114,13 @@ func (hdl *Handler) V1AuthRefresh(ctx echo.Context) error {
 		return fmt.Errorf("error bind body: %w", err)
 	}
 
-	res, err := hdl.firebase.Refresh(ctx.Request().Context(), body.RefreshToken)
+	token, err := hdl.firebase.Refresh(ctx.Request().Context(), body.RefreshToken)
 	if err != nil {
 		return fmt.Errorf("error refresh: %w", err)
+	}
+
+	res := api.V1AuthRefreshResponseSchema{
+		IdToken: token,
 	}
 
 	return ctx.JSON(http.StatusOK, res)
@@ -132,6 +137,9 @@ func (hdl *Handler) V1AuthSignIn(ctx echo.Context) error {
 
 	token, err := hdl.firebase.SignIn(ctx.Request().Context(), string(body.Email), body.Password)
 	if err != nil {
+		if model.AsUnauthorizedError(err) {
+			return ctx.JSON(http.StatusUnauthorized, "unauthorized")
+		}
 		return fmt.Errorf("error sign in: %w", err)
 	}
 

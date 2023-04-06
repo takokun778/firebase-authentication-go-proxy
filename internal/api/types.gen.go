@@ -30,6 +30,12 @@ type V1AuthRefreshRequestSchema struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
+// V1AuthRefreshResponseSchema defines model for V1AuthRefreshResponseSchema.
+type V1AuthRefreshResponseSchema struct {
+	// IdToken IDトークン
+	IdToken string `json:"idToken"`
+}
+
 // V1AuthResignRequestSchema defines model for V1AuthResignRequestSchema.
 type V1AuthResignRequestSchema struct {
 	// Email メールアドレス

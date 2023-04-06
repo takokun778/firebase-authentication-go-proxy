@@ -35,3 +35,7 @@ down: ## Down development. (retain containers and delete volumes.)
 .PHONY: balus
 balus: ## Destroy everything about docker. (containers, images, volumes, networks.)
 	@docker compose --project-name ${APP_NAME} down --rmi all --volumes
+
+.PHONY: test
+test: ## Run test.
+	@go test -v ./test/...

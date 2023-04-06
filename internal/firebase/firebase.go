@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -109,6 +108,10 @@ func (fb *Firebase) SignIn(ctx context.Context, email string, password string) (
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode == http.StatusBadRequest {
+		return model.Token{}, model.UnauthorizedError{}
+	}
+
 	if res.StatusCode != http.StatusOK {
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
@@ -132,8 +135,6 @@ func (fb *Firebase) SignIn(ctx context.Context, email string, password string) (
 	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
 		return model.Token{}, fmt.Errorf("failed to decode json: %w", err)
 	}
-
-	log.Printf("resp: %#v", resp)
 
 	strs := strings.Split(resp.IDToken, ".")
 

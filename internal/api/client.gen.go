@@ -637,6 +637,7 @@ func (r V1AuthChangePasswordResponse) StatusCode() int {
 type V1AuthRefreshResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
+	JSON200      *V1AuthRefreshResponseSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -886,6 +887,16 @@ func ParseV1AuthRefreshResponse(rsp *http.Response) (*V1AuthRefreshResponse, err
 	response := &V1AuthRefreshResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest V1AuthRefreshResponseSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	}
 
 	return response, nil
