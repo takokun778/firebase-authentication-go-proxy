@@ -20,6 +20,11 @@ gen: ## Generate code.
 	@oapi-codegen -generate client -package api ./api/openapi.yaml > ./internal/api/client.gen.go
 	@go mod tidy
 
+.PHONY: mod
+mod: ## Update go.mod.
+	@go mod tidy
+	@go mod vendor
+
 .PHONY: dev
 dev: ## Make development.
 	@docker compose --project-name ${APP_NAME} --file ./.docker/docker-compose.yaml up -d
